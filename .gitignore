@@ -1,0 +1,6 @@
+.env
+plans
+__pycache__/
+*.py[cod]
+.sessions/
+.pytest_cache/
