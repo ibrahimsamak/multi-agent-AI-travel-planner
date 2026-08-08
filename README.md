@@ -4,6 +4,8 @@ A travel planner I built to play with the OpenAI Agents SDK. You tell it where y
 
 Example: "5 days in Lisbon, 1500 EUR, flying from Toronto".
 
+![architecture](img.png)
+
 ## How it works
 
 1. The Gradio chat asks 3 questions (destination, number of days, budget) and an optional origin city.
