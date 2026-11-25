@@ -42,36 +42,30 @@ def build_finalizer_agent() -> Agent:
     )
 
 
-def _store_dir() -> Path:
-    path = Path(get_settings().session_store_dir)
-    path.mkdir(parents=True, exist_ok=True)
-    return path
-
-
 def _session_path(session_id: str) -> Path:
-    return _store_dir() / f"{session_id}.json"
+    folder = Path(get_settings().session_store_dir)
+    folder.mkdir(parents=True, exist_ok=True)
+    return folder / f"{session_id}.json"
 
 
 def _save(session_id: str, state: RunState, draft: TripPlan) -> None:
-    payload = {
-        "state": state.to_json(context_serializer=lambda _ctx: {}),
+    # The draft is saved separately, so the run context doesn't need to be stored.
+    data = {
+        "state": state.to_json(context_serializer=lambda _: {}),
         "draft": draft.model_dump(mode="json"),
     }
-    _session_path(session_id).write_text(json.dumps(payload), encoding="utf-8")
+    _session_path(session_id).write_text(json.dumps(data), encoding="utf-8")
 
 
 async def _load(session_id: str) -> tuple[RunState, TripPlan] | None:
-    path = _session_path(session_id)
-    if not path.exists():
+    file = _session_path(session_id)
+    if not file.exists():
         return None
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    draft = TripPlan.model_validate(payload["draft"])
-    agent = build_finalizer_agent()
-    state = await RunState.from_json(
-        agent,
-        payload["state"],
-        context_override=RunContextWrapper(context=PlanContext(draft=draft)),
-    )
+
+    data = json.loads(file.read_text(encoding="utf-8"))
+    draft = TripPlan.model_validate(data["draft"])
+    context = RunContextWrapper(context=PlanContext(draft=draft))
+    state = await RunState.from_json(build_finalizer_agent(), data["state"], context_override=context)
     return state, draft
 
 

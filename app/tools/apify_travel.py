@@ -34,6 +34,7 @@ def build_hotel_server():
 async def flights_and_hotels_servers():
     flights = build_flight_server()
     hotels = build_hotel_server()
+    # AsyncExitStack is a container that enters several context managers and remembers each one so it can exit them all later
     async with AsyncExitStack() as stack:
         for srv in (flights, hotels):
             if srv is not None:

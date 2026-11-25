@@ -100,8 +100,7 @@ def _assembler_prompt(req: TripRequest, research: dict[str, str], budget_notes: 
 
 async def research_and_draft(request: TripRequest, edit_notes:str | None=None)-> TripPlan:
     set_default_openai_key(get_settings().openai_api_key)
-    with trace("travel-plan", metadata={"destination": request.destination,
-                                        "mode": "edit" if edit_notes else "draft"}):
+    with trace("travel-plan", metadata={"destination": request.destination, "mode": "edit" if edit_notes else "draft"}):
         start_date, end_date = compute_dates(request)
         async with flights_and_hotels_servers() as (flights_srv, hotels_srv):
             flights_agent = build_flights_agent([flights_srv] if flights_srv else [])
